@@ -1,0 +1,147 @@
+{
+  "name": "E2E Test Suite",
+  "description": "Comprehensive Playwright E2E tests for all Milkly features",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Authentication & Navigation",
+      "tasks": [
+        {
+          "id": "E2E-1.1",
+          "name": "Login flow tests",
+          "description": "Test email OTP login: valid email, OTP entry, redirect to dashboard",
+          "files": ["e2e/tests/auth/login.spec.ts"],
+          "priority": "critical"
+        },
+        {
+          "id": "E2E-1.2",
+          "name": "Dashboard navigation tests",
+          "description": "Test dashboard loads, shows streams list, navigation works",
+          "files": ["e2e/tests/dashboard/dashboard.spec.ts"],
+          "priority": "critical"
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Stream Management",
+      "tasks": [
+        {
+          "id": "E2E-2.1",
+          "name": "Create stream tests",
+          "description": "Test stream creation with name, categories, keywords, validation",
+          "files": ["e2e/tests/streams/create-stream.spec.ts"],
+          "priority": "critical"
+        },
+        {
+          "id": "E2E-2.2",
+          "name": "Stream feed tests",
+          "description": "Test feed display, filtering, search, sort, refresh",
+          "files": ["e2e/tests/streams/stream-feed.spec.ts"],
+          "priority": "critical"
+        },
+        {
+          "id": "E2E-2.3",
+          "name": "Custom items tests",
+          "description": "Test add/edit/delete custom items in streams",
+          "files": ["e2e/tests/streams/custom-items.spec.ts"],
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Newsletter Workflows",
+      "tasks": [
+        {
+          "id": "E2E-3.1",
+          "name": "Newsletter creation tests",
+          "description": "Test selecting items, creating edition, generating content",
+          "files": ["e2e/tests/newsletters/newsletter-creation.spec.ts"],
+          "priority": "critical"
+        },
+        {
+          "id": "E2E-3.2",
+          "name": "Newsletter editor tests",
+          "description": "Test editor UI, template application, preview",
+          "files": ["e2e/tests/newsletters/newsletter-editor.spec.ts"],
+          "priority": "high"
+        },
+        {
+          "id": "E2E-3.3",
+          "name": "Published editions tests",
+          "description": "Test published list, view edition, send email",
+          "files": ["e2e/tests/newsletters/published-editions.spec.ts"],
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Templates",
+      "tasks": [
+        {
+          "id": "E2E-4.1",
+          "name": "Template library tests",
+          "description": "Test browse, search, filter templates",
+          "files": ["e2e/tests/templates/template-library.spec.ts"],
+          "priority": "high"
+        },
+        {
+          "id": "E2E-4.2",
+          "name": "Template editor tests",
+          "description": "Test create/edit template with sections",
+          "files": ["e2e/tests/templates/template-editor.spec.ts"],
+          "priority": "medium"
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Linked Streams",
+      "tasks": [
+        {
+          "id": "E2E-5.1",
+          "name": "Linked stream creation tests",
+          "description": "Test creating linked stream from multiple streams",
+          "files": ["e2e/tests/linked-streams/create-linked-stream.spec.ts"],
+          "priority": "high"
+        },
+        {
+          "id": "E2E-5.2",
+          "name": "Linked stream feed tests",
+          "description": "Test unified feed, filtering, custom items",
+          "files": ["e2e/tests/linked-streams/linked-stream-feed.spec.ts"],
+          "priority": "high"
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Media & Account",
+      "tasks": [
+        {
+          "id": "E2E-6.1",
+          "name": "Media library tests",
+          "description": "Test upload, view, delete media files",
+          "files": ["e2e/tests/media/media-library.spec.ts"],
+          "priority": "medium"
+        },
+        {
+          "id": "E2E-6.2",
+          "name": "Account settings tests",
+          "description": "Test view account, export data, delete account",
+          "files": ["e2e/tests/account/account-settings.spec.ts"],
+          "priority": "medium"
+        },
+        {
+          "id": "E2E-6.3",
+          "name": "Subscription tests",
+          "description": "Test plans page, usage display, upgrade flow",
+          "files": ["e2e/tests/subscription/subscription.spec.ts"],
+          "priority": "medium"
+        }
+      ]
+    }
+  ]
+}

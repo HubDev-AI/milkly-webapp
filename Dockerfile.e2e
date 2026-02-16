@@ -1,0 +1,25 @@
+# E2E Test Dockerfile - Playwright tests
+FROM mcr.microsoft.com/playwright:v1.58.0-noble
+
+WORKDIR /app
+
+# Install bun
+RUN npm install -g bun
+
+# Copy mkly-editor for file: dependency resolution
+COPY milkly-mklyml/mkly-editor/package.json ../milkly-mklyml/mkly-editor/package.json
+COPY milkly-mklyml/mkly-editor/dist/ ../milkly-mklyml/mkly-editor/dist/
+# Copy package files and install dependencies
+COPY milkly-webapp/package.json milkly-webapp/bun.lock* ./
+RUN bun install --frozen-lockfile
+
+# Copy test files and config
+COPY milkly-webapp/e2e ./e2e
+COPY milkly-webapp/playwright.config.ts ./
+COPY milkly-webapp/tsconfig.json ./
+
+# Copy backend types (needed for shared types)
+COPY milkly-backend/src/types.ts ../milkly-backend/src/types.ts
+
+# Default command
+CMD ["bun", "run", "test:e2e"]

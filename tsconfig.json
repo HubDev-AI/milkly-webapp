@@ -1,0 +1,25 @@
+{
+  "files": [],
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@mklyml/core": ["../milkly-mklyml/mkly/src"],
+      "@mklyml/core/*": ["../milkly-mklyml/mkly/src/*"],
+      "@mklyml/editor": ["../milkly-mklyml/mkly-editor/src/index.ts"],
+      "@mklyml/editor/*": ["../milkly-mklyml/mkly-editor/src/*"],
+      "@mklyml/kits/newsletter": ["../milkly-mklyml/mkly-kits/newsletter/src/index.ts"],
+      "@mklyml/plugins/email": ["../milkly-mklyml/mkly-plugins/email/src/index.ts"],
+      "@mkly": ["../milkly-mklyml/mkly/src"],
+      "@mkly/*": ["../milkly-mklyml/mkly/src/*"],
+      "@mkly-kits/*": ["../milkly-mklyml/mkly-kits/*"]
+    },
+    "noImplicitAny": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noUnusedLocals": false,
+    "strictNullChecks": false
+  }
+}
