@@ -40,16 +40,11 @@ export default defineConfig({
   ],
 
   // In CI/Docker, servers are already running externally
+  // Backend is not required since all API calls are mocked via page.route()
   ...(isCI
     ? {}
     : {
         webServer: [
-          {
-            command: "cd ../milkly-backend && bun run dev",
-            url: "http://localhost:3000/api/health",
-            reuseExistingServer: true,
-            timeout: 120000,
-          },
           {
             command: "bun run dev",
             url: "http://localhost:8000",

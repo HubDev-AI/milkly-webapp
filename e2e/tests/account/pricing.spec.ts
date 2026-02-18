@@ -18,7 +18,7 @@ test.describe("Pricing Page", () => {
     await page.goto("/pricing");
     await page.waitForLoadState("networkidle");
 
-    // Billing toggle should be visible (use exact match to avoid multiple matches)
+    // Billing toggle should be visible
     await expect(page.getByText("Monthly", { exact: true })).toBeVisible();
     await expect(page.getByText("Yearly", { exact: true })).toBeVisible();
     await expect(page.getByRole("switch", { name: /toggle yearly billing/i })).toBeVisible();
@@ -28,7 +28,7 @@ test.describe("Pricing Page", () => {
     await page.goto("/pricing");
     await page.waitForLoadState("networkidle");
 
-    // Save badge should be visible when yearly is selected (default)
+    // Save badge should be visible when yearly is selected
     await expect(page.getByText(/save up to 30%/i)).toBeVisible();
   });
 

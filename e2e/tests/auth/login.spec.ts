@@ -6,16 +6,16 @@ test.describe("Login Flow", () => {
     await mockUnauthenticatedSession(page);
     await page.goto("/login");
 
-    await expect(page.locator("h1")).toContainText("Milkly");
+    await expect(page.getByText("Milkly")).toBeVisible();
     await expect(page.getByLabel(/email address/i)).toBeVisible();
-    await expect(page.getByRole("button", { name: /get started/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /enter workspace/i })).toBeVisible();
   });
 
   test("should show validation error for empty email", async ({ page }) => {
     await mockUnauthenticatedSession(page);
     await page.goto("/login");
 
-    await page.getByRole("button", { name: /get started/i }).click();
+    await page.getByRole("button", { name: /enter workspace/i }).click();
 
     await expect(page.getByText("Email required", { exact: true })).toBeVisible();
   });
@@ -27,7 +27,7 @@ test.describe("Login Flow", () => {
     await mockUnauthenticatedSession(page);
 
     // Mock the OTP send endpoint
-    await page.route(`${backendUrl}/api/auth/email-otp/send-verification-otp`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/auth/email-otp/send-verification-otp`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -38,7 +38,7 @@ test.describe("Login Flow", () => {
     await page.goto("/login");
 
     await page.getByLabel(/email address/i).fill("test@example.com");
-    await page.getByRole("button", { name: /get started/i }).click();
+    await page.getByRole("button", { name: /enter workspace/i }).click();
 
     await page.waitForURL("/verify-otp");
     await expect(page).toHaveURL("/verify-otp");
@@ -49,7 +49,7 @@ test.describe("Login Flow", () => {
 
     await mockUnauthenticatedSession(page);
 
-    await page.route(`${backendUrl}/api/auth/email-otp/send-verification-otp`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/auth/email-otp/send-verification-otp`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -59,14 +59,14 @@ test.describe("Login Flow", () => {
 
     await page.goto("/login");
     await page.getByLabel(/email address/i).fill("test@example.com");
-    await page.getByRole("button", { name: /get started/i }).click();
+    await page.getByRole("button", { name: /enter workspace/i }).click();
     await page.waitForURL("/verify-otp");
 
     // Verify OTP page elements
     await expect(page.getByText("Check your email")).toBeVisible();
     await expect(page.getByText("test@example.com")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Verify" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Resend code" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Verify Code" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Resend Code" })).toBeVisible();
   });
 });
 

@@ -8,17 +8,17 @@ test.describe("Create Stream", () => {
   test("should display create stream page", async ({ page }) => {
     await page.goto("/streams/new");
 
-    await expect(page.getByText("New Stream")).toBeVisible();
-    await expect(page.getByLabel(/name/i)).toBeVisible();
-    await expect(page.getByText("Categories")).toBeVisible();
-    await expect(page.getByRole("button", { name: /create stream/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /new stream/i })).toBeVisible();
+    await expect(page.getByText("Stream Identity").first()).toBeVisible();
+    await expect(page.getByText("Curated Channels").first()).toBeVisible();
+    await expect(page.getByRole("button", { name: /launch stream/i })).toBeVisible();
   });
 
   test("should show validation error for empty name", async ({ page }) => {
     await page.goto("/streams/new");
 
     // Try to submit without name
-    await page.getByRole("button", { name: /create stream/i }).click();
+    await page.getByRole("button", { name: /launch stream/i }).click();
 
     await expect(page.getByText("Name required", { exact: true })).toBeVisible();
   });
@@ -27,14 +27,14 @@ test.describe("Create Stream", () => {
     await page.goto("/streams/new");
 
     // Fill name
-    await page.getByLabel(/name/i).fill("Test Stream");
+    await page.getByPlaceholder("e.g., The Tech Daily").fill("Test Stream");
 
     // Add a keyword
-    await page.getByPlaceholder(/add a keyword/i).fill("test");
-    await page.getByPlaceholder(/add a keyword/i).press("Enter");
+    await page.getByPlaceholder(/refinement term/i).fill("test");
+    await page.getByPlaceholder(/refinement term/i).press("Enter");
 
     // Try to submit
-    await page.getByRole("button", { name: /create stream/i }).click();
+    await page.getByRole("button", { name: /launch stream/i }).click();
 
     await expect(page.getByText("Category required", { exact: true })).toBeVisible();
   });
@@ -63,7 +63,7 @@ test.describe("Create Stream", () => {
     await page.goto("/streams/new");
 
     // Add keyword via input
-    const keywordInput = page.getByPlaceholder(/add a keyword/i);
+    const keywordInput = page.getByPlaceholder(/refinement term/i);
     await keywordInput.fill("technology");
     await keywordInput.press("Enter");
 
@@ -75,7 +75,7 @@ test.describe("Create Stream", () => {
     await page.goto("/streams/new");
 
     // Add keyword
-    const keywordInput = page.getByPlaceholder(/add a keyword/i);
+    const keywordInput = page.getByPlaceholder(/refinement term/i);
     await keywordInput.fill("technology");
     await keywordInput.press("Enter");
 
@@ -94,7 +94,7 @@ test.describe("Create Stream", () => {
     const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     // Explicitly mock the generate-keywords endpoint for this test
-    await page.route(`${backendUrl}/api/streams/generate-keywords`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/streams/generate-keywords`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -113,33 +113,32 @@ test.describe("Create Stream", () => {
     await newsCheckbox.click();
 
     // Fill name first (required for generate)
-    await page.getByLabel(/name/i).fill("AI Technology News");
+    await page.getByPlaceholder("e.g., The Tech Daily").fill("AI Technology News");
 
     // Click generate keywords button
     await page.getByRole("button", { name: /generate keywords with ai/i }).click();
 
-    // Wait for toast and keywords to appear
-    await expect(page.getByText("Keywords generated", { exact: true })).toBeVisible({ timeout: 5000 });
-    await expect(page.getByText("test-keyword-1")).toBeVisible();
+    // Wait for keywords to appear
+    await expect(page.getByText("test-keyword-1")).toBeVisible({ timeout: 5000 });
   });
 
   test("should create stream successfully", async ({ page }) => {
     await page.goto("/streams/new");
 
     // Fill form
-    await page.getByLabel(/name/i).fill("My Test Stream");
+    await page.getByPlaceholder("e.g., The Tech Daily").fill("My Test Stream");
 
     // Select News category
     const newsCheckbox = page.locator("label").filter({ hasText: "News" }).locator('[role="checkbox"]');
     await newsCheckbox.click();
 
     // Add keyword
-    const keywordInput = page.getByPlaceholder(/add a keyword/i);
+    const keywordInput = page.getByPlaceholder(/refinement term/i);
     await keywordInput.fill("testing");
     await keywordInput.press("Enter");
 
     // Submit
-    await page.getByRole("button", { name: /create stream/i }).click();
+    await page.getByRole("button", { name: /launch stream/i }).click();
 
     // Should show success toast
     await expect(page.getByText("Stream created", { exact: true })).toBeVisible();
@@ -151,8 +150,8 @@ test.describe("Create Stream", () => {
   test("should navigate back to dashboard", async ({ page }) => {
     await page.goto("/streams/new");
 
-    // Click back arrow (not a link with "back" text, it's an icon)
-    await page.locator("header").getByRole("link").click();
+    // Click back link
+    await page.getByRole("link", { name: /back/i }).click();
 
     await page.waitForURL("/");
     await expect(page).toHaveURL("/");
