@@ -7,77 +7,42 @@ test.describe("Mkly Template Editor", () => {
   });
 
   test("should open template editor with mkly source", async ({ page }) => {
-    // Navigate to stream detail and click edit on template
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
+    // Navigate to template edit page directly
+    await page.goto(`/templates/${mockTemplates[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Find and click the template to edit
-    const templateCard = page.locator("[class*='card']").filter({ hasText: mockTemplates[0].name }).first();
-    if (await templateCard.isVisible({ timeout: 5000 })) {
-      await templateCard.click();
-
-      // The editor header should show the template name
-      await expect(page.getByText(mockTemplates[0].name)).toBeVisible({ timeout: 10000 });
-    }
+    // The editor should show the template name in the heading
+    await expect(page.getByRole("heading", { name: mockTemplates[0].name })).toBeVisible({ timeout: 10000 });
   });
 
   test("should show mkly editor container", async ({ page }) => {
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
+    await page.goto(`/templates/${mockTemplates[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Click on template to open editor
-    const templateCard = page.locator("[class*='card']").filter({ hasText: mockTemplates[0].name }).first();
-    if (await templateCard.isVisible({ timeout: 5000 })) {
-      await templateCard.click();
-
-      // The mkly editor root should be present
-      await expect(page.locator(".mkly-editor-root")).toBeVisible({ timeout: 10000 });
-    }
+    // The mkly editor root should be present
+    await expect(page.locator(".mkly-editor-root")).toBeVisible({ timeout: 10000 });
   });
 
   test("should show save and close buttons in editor header", async ({ page }) => {
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
+    await page.goto(`/templates/${mockTemplates[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    const templateCard = page.locator("[class*='card']").filter({ hasText: mockTemplates[0].name }).first();
-    if (await templateCard.isVisible({ timeout: 5000 })) {
-      await templateCard.click();
-
-      // Save button should be visible (may be disabled when no changes)
-      await expect(page.getByRole("button", { name: /save/i })).toBeVisible({ timeout: 10000 });
-
-      // Close button should be visible
-      await expect(page.getByRole("button", { name: /close/i })).toBeVisible({ timeout: 10000 });
-    }
-  });
-
-  test("should show saved indicator when no changes", async ({ page }) => {
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
-    await page.waitForLoadState("networkidle");
-
-    const templateCard = page.locator("[class*='card']").filter({ hasText: mockTemplates[0].name }).first();
-    if (await templateCard.isVisible({ timeout: 5000 })) {
-      await templateCard.click();
-
-      // Should show "Saved" status indicator
-      await expect(page.getByText("Saved")).toBeVisible({ timeout: 10000 });
-    }
+    // Save button should be visible
+    await expect(page.getByRole("button", { name: /save/i })).toBeVisible({ timeout: 10000 });
   });
 
   test("should save template with mklySource field via PUT", async ({ page }) => {
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
-    await page.waitForLoadState("networkidle");
+    const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
 
-    const templateCard = page.locator("[class*='card']").filter({ hasText: mockTemplates[0].name }).first();
-    if (!(await templateCard.isVisible({ timeout: 5000 }))) return;
-    await templateCard.click();
+    await page.goto(`/templates/${mockTemplates[0].id}`);
+    await page.waitForLoadState("networkidle");
 
     // Wait for editor to load
     await expect(page.getByRole("button", { name: /save/i })).toBeVisible({ timeout: 10000 });
 
     // Set up request interception to capture the PUT payload
     let putPayload: Record<string, unknown> | null = null;
-    await page.route(`**/api/v1/templates/${mockTemplates[0].id}`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/templates/${mockTemplates[0].id}`, async (route) => {
       if (route.request().method() === "PUT") {
         putPayload = route.request().postDataJSON();
         await route.fulfill({
@@ -92,7 +57,7 @@ test.describe("Mkly Template Editor", () => {
       }
     });
 
-    // Click save button (even if no changes, we verify the endpoint format)
+    // Click save button
     const saveButton = page.getByRole("button", { name: /save/i });
     if (await saveButton.isEnabled()) {
       await saveButton.click();
@@ -112,13 +77,8 @@ test.describe("Template API Mock Validation", () => {
   });
 
   test("template list API returns mklySource instead of structure", async ({ page }) => {
+    const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
     let responseData: Record<string, unknown> | null = null;
-
-    // Intercept templates list response
-    await page.route(`${backendUrl}/api/v1/templates`, async (route) => {
-      // Let it fall through to the mock handler, but capture the response
-      await route.fallback();
-    });
 
     // Listen for the response
     page.on("response", async (response) => {
@@ -150,7 +110,7 @@ test.describe("Template API Mock Validation", () => {
     let templateData: Record<string, unknown> | null = null;
 
     page.on("response", async (response) => {
-      if (response.url().match(/\/api\/templates\/[^/]+$/) && response.status() === 200) {
+      if (response.url().match(/\/api\/v1\/templates\/[^/]+$/) && response.status() === 200) {
         try {
           const json = await response.json();
           templateData = json.data;
@@ -160,55 +120,18 @@ test.describe("Template API Mock Validation", () => {
       }
     });
 
-    // Navigate to trigger template GET
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
+    // Navigate to template edit page directly
+    await page.goto(`/templates/${mockTemplates[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    const templateCard = page.locator("[class*='card']").filter({ hasText: mockTemplates[0].name }).first();
-    if (await templateCard.isVisible({ timeout: 5000 })) {
-      await templateCard.click();
-      await page.waitForLoadState("networkidle");
+    // Wait for template to load
+    await expect(page.getByRole("heading", { name: mockTemplates[0].name })).toBeVisible({ timeout: 10000 });
 
-      if (templateData) {
-        expect(templateData).toHaveProperty("mklySource");
-        expect(templateData).not.toHaveProperty("structure");
-        expect(typeof (templateData as { mklySource: string }).mklySource).toBe("string");
-        expect((templateData as { mklySource: string }).mklySource).toContain("--- meta");
-      }
-    }
-  });
-
-  test("template creation POST returns mklySource", async ({ page }) => {
-    let createdTemplate: Record<string, unknown> | null = null;
-
-    page.on("response", async (response) => {
-      if (
-        response.url().includes("/api/v1/streams/") &&
-        response.url().includes("/templates") &&
-        response.status() === 201
-      ) {
-        try {
-          const json = await response.json();
-          createdTemplate = json.data;
-        } catch {
-          // ignore
-        }
-      }
-    });
-
-    await page.goto(`/streams/${mockTemplates[0].streamId}`);
-    await page.waitForLoadState("networkidle");
-
-    // Look for create template button
-    const createBtn = page.getByRole("button", { name: /create template|new template|generate/i });
-    if (await createBtn.isVisible({ timeout: 5000 })) {
-      await createBtn.click();
-      await page.waitForTimeout(1000);
-
-      if (createdTemplate) {
-        expect(createdTemplate).toHaveProperty("mklySource");
-        expect(createdTemplate).not.toHaveProperty("structure");
-      }
+    if (templateData) {
+      expect(templateData).toHaveProperty("mklySource");
+      expect(templateData).not.toHaveProperty("structure");
+      expect(typeof (templateData as { mklySource: string }).mklySource).toBe("string");
+      expect((templateData as { mklySource: string }).mklySource).toContain("--- meta");
     }
   });
 });

@@ -18,8 +18,7 @@ test.describe("Linked Stream Detail", () => {
     await page.goto(`/linked-streams/${mockLinkedStreams[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Should show feed items OR error state with try again button
-    // Use .first() to avoid strict mode violation when both error text and button are visible
+    // Should show feed items OR error state
     const feedContent = page.getByText(mockFeedItems[0].title);
     const errorState = page.getByText(/failed to load/i);
 
@@ -30,7 +29,7 @@ test.describe("Linked Stream Detail", () => {
     await page.goto(`/linked-streams/${mockLinkedStreams[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Should show All category button (buttons not tabs in this UI)
+    // Should show All category button
     await expect(page.getByRole("button", { name: "All" })).toBeVisible({ timeout: 5000 });
   });
 
@@ -38,7 +37,7 @@ test.describe("Linked Stream Detail", () => {
     await page.goto(`/linked-streams/${mockLinkedStreams[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Should show Milk button or similar action
+    // Should show Milk button or Create Edition
     const actionButton = page.getByRole("button", { name: /milk|refresh|create edition/i });
     await expect(actionButton.first()).toBeVisible({ timeout: 5000 });
   });
@@ -55,12 +54,12 @@ test.describe("Linked Stream Detail", () => {
     await page.waitForURL(/\/linked-streams|\/$/);
   });
 
-  test("should show Template link", async ({ page }) => {
+  test("should show Template text", async ({ page }) => {
     await page.goto(`/linked-streams/${mockLinkedStreams[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Should have Template text visible (as seen in the error context)
-    await expect(page.getByText("Template")).toBeVisible({ timeout: 5000 });
+    // Should have Template text visible
+    await expect(page.getByText("Template").first()).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -73,8 +72,8 @@ test.describe("Linked Stream Detail - Feed Actions", () => {
     await page.goto(`/linked-streams/${mockLinkedStreams[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Create Edition button should be visible regardless of feed state
-    await expect(page.getByRole("button", { name: "Create Edition" })).toBeVisible({ timeout: 5000 });
+    // Create Edition button should be visible
+    await expect(page.getByRole("button", { name: /create edition/i }).first()).toBeVisible({ timeout: 5000 });
   });
 
   test("should navigate to newsletter editor", async ({ page }) => {
@@ -86,8 +85,8 @@ test.describe("Linked Stream Detail - Feed Actions", () => {
       page.getByRole("link", { name: /create edition/i })
     );
 
-    if (await createEditionButton.isVisible({ timeout: 3000 })) {
-      await createEditionButton.click();
+    if (await createEditionButton.first().isVisible({ timeout: 3000 })) {
+      await createEditionButton.first().click();
 
       // Should navigate to newsletter editor
       await page.waitForURL(/\/newsletter/);
@@ -105,6 +104,6 @@ test.describe("Linked Stream Detail - Templates", () => {
     await page.waitForLoadState("networkidle");
 
     // Template indicator should be visible in header
-    await expect(page.getByText("Template")).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Template").first()).toBeVisible({ timeout: 5000 });
   });
 });

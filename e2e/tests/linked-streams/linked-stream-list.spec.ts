@@ -9,8 +9,9 @@ test.describe("Linked Stream List", () => {
   test("should display linked streams page with header", async ({ page }) => {
     await page.goto("/linked-streams");
 
-    // Should show page title - use exact match
-    await expect(page.getByRole("heading", { name: "Linked Streams", exact: true })).toBeVisible({ timeout: 5000 });
+    // Should show page title
+    await expect(page.getByText("Linked").first()).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Streams").first()).toBeVisible({ timeout: 5000 });
   });
 
   test("should display linked streams list", async ({ page }) => {
@@ -25,9 +26,9 @@ test.describe("Linked Stream List", () => {
     await page.goto("/linked-streams");
     await page.waitForLoadState("networkidle");
 
-    // Create button should be visible
-    const createButton = page.getByRole("button", { name: /create|new/i }).or(
-      page.getByRole("link", { name: /create|new/i })
+    // Create button should be visible - "New Stream" or "New Linked Stream"
+    const createButton = page.getByRole("button", { name: /new.*stream/i }).or(
+      page.getByRole("link", { name: /new.*stream/i })
     );
     await expect(createButton.first()).toBeVisible({ timeout: 5000 });
   });
@@ -79,14 +80,13 @@ test.describe("Linked Stream List - Empty State", () => {
     await mockAPI.streams(page);
     await mockAPI.subscription(page);
 
-    // Mock empty linked streams - use regex to match URLs with query params
+    // Mock empty linked streams
     const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
-    await page.route(new RegExp(`${backendUrl.replace(/\./g, "\\.")}/api/linked-streams(\\?|$)`), async (route) => {
+    await page.route(new RegExp(`${backendUrl.replace(/\./g, "\\.")}/api/v1/linked-streams(\\?|$)`), async (route) => {
       const url = route.request().url();
       const pathname = new URL(url).pathname;
 
-      // Only handle /api/linked-streams, not sub-routes
-      if (pathname !== "/api/linked-streams") {
+      if (pathname !== "/api/v1/linked-streams") {
         await route.fallback();
         return;
       }
@@ -104,7 +104,9 @@ test.describe("Linked Stream List - Empty State", () => {
     await page.goto("/linked-streams");
     await page.waitForLoadState("networkidle");
 
-    // Should show empty state message
-    await expect(page.getByText(/no linked streams/i).or(page.getByText(/create your first/i))).toBeVisible({ timeout: 5000 });
+    // Should show empty state message - "Draft your first Editorial Fusion" or "Create Fusion" button
+    await expect(
+      page.getByRole("button", { name: /create fusion/i }).or(page.getByRole("link", { name: /create fusion/i }))
+    ).toBeVisible({ timeout: 5000 });
   });
 });

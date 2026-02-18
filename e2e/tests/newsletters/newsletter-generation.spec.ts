@@ -3,23 +3,18 @@ import { mockStreams, mockNewsletters } from "../../mocks/data";
 
 test.describe("Newsletter Generation (AI Mocked)", () => {
   test.beforeEach(async ({ page, mockAPI }) => {
-    // Set up all mocks including AI endpoints
     await mockAPI.all(page);
   });
 
   test("should load newsletter editor for new edition", async ({ page }) => {
-    // Navigate to new newsletter creation (works better with mocks)
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/new`);
-
-    // Wait for page to load
     await page.waitForLoadState("networkidle");
 
     // Should show editor UI with "New Edition" heading
-    await expect(page.getByRole("heading", { name: "New Edition" })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole("heading", { name: /new edition/i })).toBeVisible({ timeout: 10000 });
   });
 
   test("should generate newsletter content with mocked AI", async ({ page }) => {
-    // Navigate to new newsletter creation
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/new`, {
       waitUntil: "networkidle",
     });
@@ -37,16 +32,12 @@ test.describe("Newsletter Generation (AI Mocked)", () => {
       );
 
       // Content should be populated with mocked AI response
-      // Check for elements from mockGeneratedContent
       await expect(page.getByText(/Weekly Tech Digest/i)).toBeVisible({ timeout: 10000 });
     }
   });
 
   test("should show action buttons on new newsletter page", async ({ page }) => {
-    // Navigate to new newsletter creation
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/new`);
-
-    // Wait for page to load
     await page.waitForLoadState("networkidle");
 
     // Save Draft button should be visible
@@ -57,13 +48,10 @@ test.describe("Newsletter Generation (AI Mocked)", () => {
   });
 
   test("should generate notes for items with mocked AI", async ({ page }) => {
-    // Navigate to newsletter
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/${mockNewsletters[0].id}`);
-
-    // Wait for page
     await page.waitForLoadState("networkidle");
 
-    // Find generate notes button (might be in a dropdown or directly visible)
+    // Find generate notes button
     const generateNotesButton = page.getByRole("button", { name: /generate notes|auto notes/i });
 
     if (await generateNotesButton.isVisible()) {
@@ -87,7 +75,6 @@ test.describe("Newsletter Editor Actions", () => {
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/${mockNewsletters[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Find save button
     const saveButton = page.getByRole("button", { name: /save|draft/i });
 
     if (await saveButton.isVisible()) {
@@ -102,7 +89,6 @@ test.describe("Newsletter Editor Actions", () => {
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/${mockNewsletters[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Find preview tab
     const previewTab = page.getByRole("tab", { name: /preview/i });
 
     if (await previewTab.isVisible()) {
@@ -117,7 +103,6 @@ test.describe("Newsletter Editor Actions", () => {
     await page.goto(`/streams/${mockStreams[0].id}/newsletter/${mockNewsletters[0].id}`);
     await page.waitForLoadState("networkidle");
 
-    // Find publish button
     const publishButton = page.getByRole("button", { name: /publish/i });
 
     if (await publishButton.isVisible()) {

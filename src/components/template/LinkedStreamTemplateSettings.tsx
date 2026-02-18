@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { useToast } from "@/hooks/useToast";
 import {
+  FileText,
   Sparkles,
   Loader2,
   Check,
