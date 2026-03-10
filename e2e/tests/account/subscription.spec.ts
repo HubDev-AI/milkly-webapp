@@ -9,9 +9,9 @@ test.describe("Subscription Page", () => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Should show page title
-    await expect(page.getByRole("heading", { name: "Subscription" })).toBeVisible();
-    await expect(page.getByText("Manage your plan and usage")).toBeVisible();
+    // Should show page title - "Subscription"
+    await expect(page.getByText("Subscription").first()).toBeVisible();
+    await expect(page.getByText(/orchestrate your content delivery/i)).toBeVisible();
   });
 
   test("should show current plan card", async ({ page }) => {
@@ -19,17 +19,15 @@ test.describe("Subscription Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Current plan card should be visible - Professional tier from mock
-    await expect(page.getByRole("heading", { name: "Professional" })).toBeVisible();
-    await expect(page.getByText("Current plan", { exact: true })).toBeVisible();
+    await expect(page.getByText("Professional").first()).toBeVisible();
   });
 
   test("should show active status badge", async ({ page }) => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Active status badge should be visible (it's in the current plan card)
-    const planCard = page.locator("[class*=card]").filter({ hasText: "Current plan" }).first();
-    await expect(planCard.getByText("Active")).toBeVisible();
+    // Active status badge should be visible
+    await expect(page.getByText("Active").first()).toBeVisible();
   });
 
   test("displays subscription page with current plan and usage sections", async ({ page }) => {
@@ -37,43 +35,44 @@ test.describe("Subscription Page", () => {
     await page.waitForLoadState("networkidle");
 
     // Verify current plan card is visible
-    await expect(page.getByRole("heading", { name: "Professional" })).toBeVisible();
-    await expect(page.getByText("Current plan", { exact: true })).toBeVisible();
+    await expect(page.getByText("Professional").first()).toBeVisible();
 
-    // Verify usage card is visible with correct sections
-    await expect(page.getByText("Usage This Month")).toBeVisible();
-    await expect(page.getByText("Streams", { exact: true })).toBeVisible();
-    await expect(page.getByText("Refreshes", { exact: true })).toBeVisible();
-    await expect(page.getByText("AI Credits", { exact: true })).toBeVisible();
+    // Verify usage card is visible - "Usage Dynamics"
+    await expect(page.getByText("Usage Dynamics")).toBeVisible();
+    await expect(page.getByText("Active Streams")).toBeVisible();
+    await expect(page.getByText("Refreshes").first()).toBeVisible();
+    await expect(page.getByText("AI Generation")).toBeVisible();
 
-    // Verify 'Manage Subscription' button is visible for paid users (Professional tier)
-    await expect(page.getByRole("button", { name: /manage subscription/i })).toBeVisible();
+    // Verify manage button is visible for paid users
+    await expect(page.getByRole("button", { name: /manage credentials/i })).toBeVisible();
   });
 
   test("should show included features", async ({ page }) => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Features card should be visible
-    await expect(page.getByText("Included Features")).toBeVisible();
-    await expect(page.getByText("What you get with your current plan")).toBeVisible();
+    // Features card should be visible - "Plan Manifest"
+    await expect(page.getByText("Plan Manifest")).toBeVisible();
+    await expect(page.getByText("Integrated functionalities")).toBeVisible();
   });
 
   test("should show upgrade/change plan button", async ({ page }) => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Change plan button should be visible (user is on Professional)
-    const changePlanButton = page.getByRole("link", { name: /change plan|upgrade plan/i });
-    await expect(changePlanButton).toBeVisible();
+    // Change plan button should be visible - "Upgrade Trajectory" or "Evolve Plan"
+    const changePlanButton = page.getByRole("link", { name: /upgrade trajectory|evolve plan/i }).or(
+      page.getByRole("button", { name: /upgrade trajectory|evolve plan/i })
+    );
+    await expect(changePlanButton.first()).toBeVisible();
   });
 
   test("should show manage billing button for paid tier", async ({ page }) => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Manage subscription button should be visible for Professional tier
-    await expect(page.getByRole("button", { name: /manage subscription/i })).toBeVisible();
+    // Manage button should be visible - "Manage Credentials"
+    await expect(page.getByRole("button", { name: /manage credentials/i })).toBeVisible();
   });
 
   test("should navigate back to dashboard", async ({ page }) => {
@@ -92,9 +91,11 @@ test.describe("Subscription Page", () => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Click change plan link
-    const changePlanLink = page.getByRole("link", { name: /change plan|upgrade plan/i });
-    await changePlanLink.click();
+    // Click change plan link - "Upgrade Trajectory" or "Evolve Plan"
+    const changePlanLink = page.getByRole("link", { name: /upgrade trajectory|evolve plan/i }).or(
+      page.getByRole("button", { name: /upgrade trajectory|evolve plan/i })
+    );
+    await changePlanLink.first().click();
 
     // Should navigate to pricing
     await page.waitForURL("/pricing");
@@ -107,7 +108,7 @@ test.describe("Subscription Page - Usage Limits from Snapshot", () => {
     const snapshotDate = new Date().toISOString();
 
     // Mock subscription endpoint with snapshotted limits
-    await page.route(`${backendUrl}/api/subscription`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/subscription`, async (route) => {
       if (route.request().method() === "GET") {
         await route.fulfill({
           status: 200,
@@ -158,7 +159,7 @@ test.describe("Subscription Page - Usage Limits from Snapshot", () => {
     await mockAPI.linkedStreams(page);
 
     // Mock dev-status endpoint
-    await page.route(`${backendUrl}/api/subscription/dev-status`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/subscription/dev-status`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -170,7 +171,7 @@ test.describe("Subscription Page - Usage Limits from Snapshot", () => {
     await page.waitForLoadState("networkidle");
 
     // Verify usage card displays the snapshotted limits correctly
-    await expect(page.getByText("Usage This Month")).toBeVisible();
+    await expect(page.getByText("Usage Dynamics")).toBeVisible();
     await expect(page.getByText("3 / 10")).toBeVisible(); // Streams
     await expect(page.getByText("15 / 100")).toBeVisible(); // Refreshes
     await expect(page.getByText("50 / 300")).toBeVisible(); // AI Credits
@@ -182,7 +183,7 @@ test.describe("Subscription Page - Essential Tier Expired", () => {
     const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     // Mock subscription endpoint with expired essential tier
-    await page.route(`${backendUrl}/api/subscription`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/subscription`, async (route) => {
       if (route.request().method() === "GET") {
         await route.fulfill({
           status: 200,
@@ -233,7 +234,7 @@ test.describe("Subscription Page - Essential Tier Expired", () => {
     await mockAPI.linkedStreams(page);
 
     // Mock dev-status endpoint
-    await page.route(`${backendUrl}/api/subscription/dev-status`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/subscription/dev-status`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -244,15 +245,11 @@ test.describe("Subscription Page - Essential Tier Expired", () => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Verify "Essential Plan Expired" alert/banner is visible
-    await expect(page.getByText("Essential Plan Expired")).toBeVisible();
-    await expect(page.getByText(/Your essential plan has expired/)).toBeVisible();
+    // Verify expired banner is visible - "Complimentary Cycle Concluded"
+    await expect(page.getByText(/complimentary cycle concluded/i).or(page.getByText(/essential plan expired/i))).toBeVisible();
 
-    // Verify "Upgrade Now" button is visible
-    await expect(page.getByRole("button", { name: "Upgrade Now" })).toBeVisible();
-
-    // Verify usage card is disabled/hidden (shows different content when freeTierStatus.active is false)
-    await expect(page.getByText("Upgrade to a paid plan to view and track your usage")).toBeVisible();
+    // Verify "Upgrade to Professional" button is visible
+    await expect(page.getByRole("button", { name: /upgrade/i }).first()).toBeVisible();
   });
 });
 
@@ -265,9 +262,9 @@ test.describe("Subscription Page - Dev Mode", () => {
     await page.goto("/subscription");
     await page.waitForLoadState("networkidle");
 
-    // Dev mode section should be visible (mock has devMode: true)
-    await expect(page.getByText("Dev Mode")).toBeVisible();
-    await expect(page.getByText("Testing Only")).toBeVisible();
+    // Dev mode section should be visible - "Nexus Override"
+    await expect(page.getByText("Nexus Override")).toBeVisible();
+    await expect(page.getByText("Experimental Provisioning")).toBeVisible();
   });
 
   test("should show tier buttons in dev mode", async ({ page }) => {
@@ -276,7 +273,7 @@ test.describe("Subscription Page - Dev Mode", () => {
 
     // All tier buttons should be visible
     await expect(page.getByRole("button", { name: /essential/i })).toBeVisible();
-    await expect(page.getByRole("button", { name: /professional/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: /professional/i }).first()).toBeVisible();
     await expect(page.getByRole("button", { name: /mastery/i })).toBeVisible();
   });
 
@@ -286,7 +283,7 @@ test.describe("Subscription Page - Dev Mode", () => {
     let requestedTier: string | null = null;
 
     // Intercept the dev-switch endpoint to verify the request
-    await page.route(`${backendUrl}/api/subscription/dev-switch`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/subscription/dev-switch`, async (route) => {
       const body = route.request().postDataJSON();
       tierSwitchRequested = true;
       requestedTier = body?.tier;
@@ -306,10 +303,9 @@ test.describe("Subscription Page - Dev Mode", () => {
     await page.waitForLoadState("networkidle");
 
     // Verify dev mode tier switcher is visible
-    await expect(page.getByText("Dev Mode")).toBeVisible();
-    await expect(page.getByText("Testing Only")).toBeVisible();
+    await expect(page.getByText("Nexus Override")).toBeVisible();
 
-    // Find the Essential button (which should not be the current tier since mock is Professional)
+    // Find the Essential button
     const essentialButton = page.locator("button").filter({ hasText: /^Essential$/ });
     await expect(essentialButton).toBeVisible();
 

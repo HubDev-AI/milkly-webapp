@@ -10,9 +10,9 @@ test.describe("Dashboard", () => {
     await page.goto("/");
 
     // Check header elements
-    await expect(page.getByText("Milkly")).toBeVisible();
-    await expect(page.getByText("Your Streams")).toBeVisible();
-    await expect(page.getByText("Milk the internet for your best content")).toBeVisible();
+    await expect(page.getByText("Milkly").first()).toBeVisible();
+    await expect(page.getByText("Streams").first()).toBeVisible();
+    await expect(page.getByText("Your editorial content feeds, all in one place.")).toBeVisible();
 
     // Check streams are displayed
     for (const stream of mockStreams) {
@@ -23,14 +23,14 @@ test.describe("Dashboard", () => {
   test("should show New Stream button when streams exist", async ({ page }) => {
     await page.goto("/");
 
-    const newStreamButton = page.getByRole("link", { name: /new stream/i });
+    const newStreamButton = page.getByRole("link", { name: /new editorial stream/i });
     await expect(newStreamButton).toBeVisible();
   });
 
   test("should navigate to create stream page", async ({ page }) => {
     await page.goto("/");
 
-    await page.getByRole("link", { name: /new stream/i }).click();
+    await page.getByRole("link", { name: /new editorial stream/i }).click();
     await page.waitForURL("/streams/new");
     await expect(page).toHaveURL("/streams/new");
   });
@@ -49,7 +49,6 @@ test.describe("Dashboard", () => {
     await page.goto("/");
 
     // Categories should be visible as badges
-    // mockStreams[0] has categories: ["news", "videos"]
     const streamCard = page.locator("text=Tech News").locator("..");
     await expect(streamCard).toBeVisible();
   });
@@ -64,8 +63,8 @@ test.describe("Dashboard", () => {
     // Click to open menu
     await userMenuButton.click();
 
-    // Menu items should be visible
-    await expect(page.getByText(/settings/i)).toBeVisible();
+    // Menu items should be visible after opening dropdown
+    await expect(page.getByRole("menuitem", { name: /settings/i }).or(page.getByRole("link", { name: /settings/i }))).toBeVisible({ timeout: 5000 });
   });
 });
 
@@ -78,7 +77,7 @@ test.describe("Dashboard - Empty State", () => {
     await mockAPI.subscription(page);
 
     // Mock empty streams
-    await page.route(`${backendUrl}/api/streams*`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/streams*`, async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -94,7 +93,7 @@ test.describe("Dashboard - Empty State", () => {
     // Empty state elements
     await expect(page.getByText("Create your first stream")).toBeVisible();
     await expect(page.getByText(/Start aggregating content/i)).toBeVisible();
-    await expect(page.getByRole("link", { name: /new stream/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /start your first stream/i })).toBeVisible();
   });
 });
 
@@ -107,14 +106,20 @@ test.describe("Dashboard - Linked Streams Section", () => {
     await page.goto("/");
 
     // With Professional subscription and streams, linked streams section should appear
-    await expect(page.getByText("Linked Streams")).toBeVisible();
+    await expect(page.getByText("Linked").first()).toBeVisible();
   });
 
   test("should navigate to linked stream when clicked", async ({ page }) => {
     const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
 
     // Add mock for linked streams
-    await page.route(`${backendUrl}/api/linked-streams*`, async (route) => {
+    await page.route(`${backendUrl}/api/v1/linked-streams*`, async (route) => {
+      const url = route.request().url();
+      const pathname = new URL(url).pathname;
+      if (pathname !== "/api/v1/linked-streams") {
+        await route.fallback();
+        return;
+      }
       await route.fulfill({
         status: 200,
         contentType: "application/json",

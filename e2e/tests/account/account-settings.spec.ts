@@ -10,18 +10,18 @@ test.describe("Account Settings", () => {
     await page.goto("/settings");
     await page.waitForLoadState("networkidle");
 
-    // Should show page title
-    await expect(page.getByRole("heading", { name: "Account Settings" })).toBeVisible();
-    await expect(page.getByText("Manage your account and data")).toBeVisible();
+    // Should show page title - "Account"
+    await expect(page.getByText("Account").first()).toBeVisible();
+    await expect(page.getByText(/calibrate your core parameters/i)).toBeVisible();
   });
 
-  test("should show profile card with user information", async ({ page }) => {
+  test("should show identity card with user information", async ({ page }) => {
     await page.goto("/settings");
     await page.waitForLoadState("networkidle");
 
-    // Profile card should be visible
-    await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
-    await expect(page.getByText("Your account information")).toBeVisible();
+    // Identity card should be visible
+    await expect(page.getByRole("heading", { name: "Identity" })).toBeVisible();
+    await expect(page.getByText("Core Profile manifest")).toBeVisible();
 
     // User info should be shown
     await expect(page.getByText(mockUser.name)).toBeVisible();
@@ -32,24 +32,24 @@ test.describe("Account Settings", () => {
     await page.goto("/settings");
     await page.waitForLoadState("networkidle");
 
-    // Export card should be visible
-    await expect(page.getByRole("heading", { name: "Export Your Data" })).toBeVisible();
-    await expect(page.getByText("Download a copy of all your data")).toBeVisible();
+    // Export card should be visible - "Manifest Extraction"
+    await expect(page.getByText("Manifest Extraction")).toBeVisible();
+    await expect(page.getByText("Historical Archive Access")).toBeVisible();
 
-    // Export button should be visible
-    await expect(page.getByRole("button", { name: /export data/i })).toBeVisible();
+    // Export button should be visible - "Initiate Extraction"
+    await expect(page.getByRole("button", { name: /initiate extraction/i })).toBeVisible();
   });
 
   test("should show danger zone card", async ({ page }) => {
     await page.goto("/settings");
     await page.waitForLoadState("networkidle");
 
-    // Danger zone card should be visible
-    await expect(page.getByRole("heading", { name: "Danger Zone" })).toBeVisible();
-    await expect(page.getByText("Irreversible actions")).toBeVisible();
+    // Danger zone card should be visible - "Terminal Protocol"
+    await expect(page.getByText("Terminal Protocol")).toBeVisible();
+    await expect(page.getByText("Irreversible Manifest Erasure")).toBeVisible();
 
-    // Delete button should be visible
-    await expect(page.getByRole("button", { name: /delete account/i })).toBeVisible();
+    // Delete button should be visible - "Erase Identity"
+    await expect(page.getByRole("button", { name: /erase identity/i })).toBeVisible();
   });
 
   test("should navigate back to dashboard", async ({ page }) => {
@@ -74,8 +74,8 @@ test.describe("Account Settings - Delete Account", () => {
     await page.goto("/settings");
     await page.waitForLoadState("networkidle");
 
-    // Click delete account button
-    await page.getByRole("button", { name: /delete account/i }).click();
+    // Click delete account button - "Erase Identity"
+    await page.getByRole("button", { name: /erase identity/i }).click();
 
     // Dialog should open
     await expect(page.getByRole("alertdialog")).toBeVisible();
@@ -87,13 +87,13 @@ test.describe("Account Settings - Delete Account", () => {
     await page.waitForLoadState("networkidle");
 
     // Open dialog
-    await page.getByRole("button", { name: /delete account/i }).click();
+    await page.getByRole("button", { name: /erase identity/i }).click();
 
     // Should show confirmation text instructions
-    await expect(page.getByText(/to confirm, type.*delete my account/i)).toBeVisible();
+    await expect(page.getByText(/to confirm, type.*DELETE MY ACCOUNT/i)).toBeVisible();
 
-    // Input should be visible (use role-based selector for textbox)
-    await expect(page.getByRole("textbox", { name: "DELETE MY ACCOUNT" })).toBeVisible();
+    // Input should be visible
+    await expect(page.getByPlaceholder("DELETE MY ACCOUNT")).toBeVisible();
   });
 
   test("should disable delete button until confirmation typed", async ({ page }) => {
@@ -101,7 +101,7 @@ test.describe("Account Settings - Delete Account", () => {
     await page.waitForLoadState("networkidle");
 
     // Open dialog
-    await page.getByRole("button", { name: /delete account/i }).click();
+    await page.getByRole("button", { name: /erase identity/i }).click();
 
     // Delete button should be disabled initially
     const deleteButton = page.getByRole("button", { name: "Delete My Account" });
@@ -121,7 +121,7 @@ test.describe("Account Settings - Delete Account", () => {
     await page.waitForLoadState("networkidle");
 
     // Open dialog
-    await page.getByRole("button", { name: /delete account/i }).click();
+    await page.getByRole("button", { name: /erase identity/i }).click();
     await expect(page.getByRole("alertdialog")).toBeVisible();
 
     // Click cancel
@@ -145,11 +145,10 @@ test.describe("Account Settings - Export Data", () => {
     // Set up download listener
     const downloadPromise = page.waitForEvent("download", { timeout: 5000 }).catch(() => null);
 
-    // Click export button
-    await page.getByRole("button", { name: /export data/i }).click();
+    // Click export button - "Initiate Extraction"
+    await page.getByRole("button", { name: /initiate extraction/i }).click();
 
-    // Should either download file or show toast (depending on browser)
-    // For test purposes, we just verify the button was clickable and no errors occurred
+    // Should either download file or show toast
     const successToast = page.getByText("Data exported");
     const download = await downloadPromise;
 
