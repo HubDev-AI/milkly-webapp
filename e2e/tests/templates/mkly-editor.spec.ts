@@ -32,8 +32,6 @@ test.describe("Mkly Template Editor", () => {
   });
 
   test("should save template with mklySource field via PUT", async ({ page }) => {
-    const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
-
     await page.goto(`/templates/${mockTemplates[0].id}`);
     await page.waitForLoadState("networkidle");
 
@@ -42,7 +40,7 @@ test.describe("Mkly Template Editor", () => {
 
     // Set up request interception to capture the PUT payload
     let putPayload: Record<string, unknown> | null = null;
-    await page.route(`${backendUrl}/api/v1/templates/${mockTemplates[0].id}`, async (route) => {
+    await page.route(`**/api/v1/templates/${mockTemplates[0].id}`, async (route) => {
       if (route.request().method() === "PUT") {
         putPayload = route.request().postDataJSON();
         await route.fulfill({
@@ -77,7 +75,6 @@ test.describe("Template API Mock Validation", () => {
   });
 
   test("template list API returns mklySource instead of structure", async ({ page }) => {
-    const backendUrl = process.env.VITE_BACKEND_URL || "http://localhost:3000";
     let responseData: Record<string, unknown> | null = null;
 
     // Listen for the response
